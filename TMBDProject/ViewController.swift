@@ -23,7 +23,7 @@ class ViewController: UIViewController {
     
     func tmdb() {
         
-        let url = "https://api.themoviedb.org/3/trending/movie/week?api_key=d2afb0ae64fac688e7db47527847933d"
+        let url = "https://api.themoviedb.org/3/trending/movie/week?api_key=\(Key.tmdb)"
         AF.request(url, method: .get).validate().responseJSON { response in
             switch response.result {
             case .success(let value):
