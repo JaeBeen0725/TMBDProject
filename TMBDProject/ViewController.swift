@@ -12,7 +12,7 @@ import Kingfisher
 
 struct Movie {
     let movieDate: String
-    let movieGengre: String
+    let movieGengre: Int
     let movieThumbnail: String
     let movieTitle: String
     let movieCast: Int
@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-     
+        tmdb()
         movieCollectionView.dataSource = self
         movieCollectionView.delegate = self
         movieCollectionView.register(UINib(nibName: "MovieCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "MovieCollectionViewCell")
@@ -37,23 +37,31 @@ class ViewController: UIViewController {
         movieCollectionView.register(UINib(nibName: "MovieHeaderCollectionReusableView", bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MovieHeaderCollectionReusableView")
         
         collectionViewLayout()
-      tmdb(row: 0)
+     
     }
  
     func collectionViewLayout() {
 
+//        let layout = UICollectionViewFlowLayout()
+//        layout.itemSize = CGSize(width: 200, height: 200)
+//        layout.minimumLineSpacing = 8
+//        layout.minimumInteritemSpacing = 8
+//        layout.scrollDirection = .vertical
+//        layout.headerReferenceSize = CGSize(width: 300, height: 50)
+
+        
         let layout = UICollectionViewFlowLayout()
-        let spacing: CGFloat = 12
-        let width = UIScreen.main.bounds.width - (spacing * 3)
+        let spacing: CGFloat = 1
+        let width = UIScreen.main.bounds.width - (spacing * 1)
         layout.itemSize = CGSize(width: width / 2, height: width / 2)
         layout.sectionInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
         layout.minimumLineSpacing = spacing
         layout.minimumInteritemSpacing = spacing
         layout.scrollDirection = .vertical
-        movieCollectionView.collectionViewLayout = layout
+       movieCollectionView.collectionViewLayout = layout
     }
    
-    func tmdb(row : Int) {
+    func tmdb() {
         
         let url = "https://api.themoviedb.org/3/trending/movie/week?api_key=\(Key.tmdb)"
         AF.request(url, method: .get).validate().responseJSON { response in
@@ -65,7 +73,7 @@ class ViewController: UIViewController {
                 for item in json["results"].arrayValue {
 
                     let cast = item["id"].intValue
-                    let genre = item["genre_ids"][0].stringValue
+                    let genre = item["genre_ids"][0].intValue
                     let thumbnail = item["poster_path"].stringValue
                     let title = item["title"].stringValue
                     let date = item["release_date"].stringValue
@@ -92,11 +100,12 @@ class ViewController: UIViewController {
    
 }
 
-extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate{
+ 
     
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-       return movieList.count
-    }
+//    func numberOfSections(in collectionView: UICollectionView) -> Int {
+//       return movieList.count
+//    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return movieList.count
@@ -105,15 +114,42 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as? MovieCollectionViewCell else { return UICollectionViewCell() }
         cell.movieCastLabel.text = String(movieList[indexPath.row].movieCast)
-      
+        cell.movieTitleLabel.text = movieList[indexPath.row].movieTitle
+        cell.movieDateLabel.text = movieList[indexPath.row].movieDate
+        cell.movieGenreLabel.text = genreList[movieList[indexPath.row].movieGengre]
+   
+        if let url = URL(string: "https://image.tmdb.org/t/p/w500/\(movieList[indexPath.row].movieThumbnail)") {
+            cell.movieThumbnailImageView.kf.setImage(with: url)
+        } else {
+            print("이미지 없음")
+        }
+        
         return cell
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        guard let vc = self.storyboard?.instantiateViewController(identifier: "DetailViewController") as? DetailViewController else {
+                    return
+                }
+                
+        vc.testdata = movieList[indexPath.row].movieCast
+                self.navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    
+    
+    
+    
+    
+    /*
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        
         if kind == UICollectionView.elementKindSectionHeader {
             
             guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "MovieHeaderCollectionReusableView", for: indexPath) as? MovieHeaderCollectionReusableView else { return UICollectionReusableView() }
-            
+            view.movieDateLabel.text = movieList[indexPath.row].movieDate
+            view.movieGenreLabel.text = genreList[movieList[indexPath.row].movieGengre]
             
             
             return view
@@ -121,7 +157,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
             return UICollectionReusableView()
         }
     }
-    
+    */
     
 }
 

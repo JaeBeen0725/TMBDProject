@@ -13,6 +13,8 @@ class MovieCollectionViewCell: UICollectionViewCell {
     @IBOutlet var movieTitleLabel: UILabel!
     @IBOutlet var movieCastLabel: UILabel!
     
+    @IBOutlet var movieDateLabel: UILabel!
+    @IBOutlet var movieGenreLabel: UILabel!
     
     
     override func awakeFromNib() {
